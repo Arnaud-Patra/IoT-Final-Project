@@ -1,112 +1,148 @@
 <html>
 <head>
   <title>Test Ws mqtt.js</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 </head>
 <body>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script> <!-- https://github.com/mqttjs/MQTT.js/ -->
-  
+
 <script>
+  // '$' is a the JQuery object. It has a lot of function to do Document Object Model (DOM) manipulation, event handling, animation, Ajax and a lot more.
+
+  var clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
+
+  var host = 'wss://m21.cloudmqtt.com:31029'
+
+  var options = {
+    keepalive: 10,
+    clientId: clientId,
+    protocolId: 'MQTT',
+    protocolVersion: 4,
+    clean: true,
+    reconnectPeriod: 1000,
+    connectTimeout: 30 * 1000,
+    will: {
+      topic: 'WillMsg',
+      payload: 'Connection Closed abnormally..!',
+      qos: 0,
+      retain: false
+    },
+    username: 'philips-hue-973',
+    password: 'philips-hue-973',
+    rejectUnauthorized: false
+  }
 
 
-// '$' is a the JQuery object. It has a lot of function to do Document Object Model (DOM) manipulation, event handling, animation, Ajax and a lot more.
+  // the function passed as parameter will be called when the DOM is ready
+  $(function(){
 
-var clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
+    console.log("starting");
 
-var host = 'wss://m21.cloudmqtt.com:31029'
-
-var options = {
-  keepalive: 10,
-  clientId: clientId,
-  protocolId: 'MQTT',
-  protocolVersion: 4,
-  clean: true,
-  reconnectPeriod: 1000,
-  connectTimeout: 30 * 1000,
-  will: {
-    topic: 'WillMsg',
-    payload: 'Connection Closed abnormally..!',
-    qos: 0,
-    retain: false
-  },
-  username: 'ghlyeczk',
-  password: 'ygclNYrYVgvv',
-  rejectUnauthorized: false
-}
-
-
-// the function passed as parameter will be called when the DOM is ready
-$(function(){
-
-  console.log("starting");
-
-  // create a client that will publish and subscribe to topics
-  //var client = mqtt.connect("wss://ghlyeczk:ygclNYrYVgvv@m21.cloudmqtt.com:31029")
-  var client = mqtt.connect(host, options)
-  // subscribe to some topic
-  client.on("connect", function() {
-    client.subscribe("sensor/#",{ qos: 2 }, function(err) {
-      if (err) {
-        console.log(err);
-      }
+    // create a client that will publish and subscribe to topics
+    //var client = mqtt.connect("wss://ghlyeczk:ygclNYrYVgvv@m21.cloudmqtt.com:31029")
+    var client = mqtt.connect(host, options)
+    // subscribe to some topic
+    client.on("connect", function() {
+      client.subscribe("light/#",{ qos: 2 }, function(err) {
+        if (err) {
+          console.log(err);
+        }
+      });
     });
-  });
 
-  // this will be called when a message is received
-  client.on("message", function (topic, payload) {
-    var message = new TextDecoder("utf-8").decode(payload);
-    console.log("message received by client: " , topic , message);
-    $('#reading').html(topic + ": " + message);
+    // this will be called when a message is received
+    client.on("message", function (topic, payload) {
+      var message = new TextDecoder("utf-8").decode(payload);
+      console.log("message received by client: " , topic , message);
+      $('#reading').html(topic + ": " + message);
 
-    var words = topic.split('/');
+      var words = topic.split('/');
 
-    switch (words[2]) {
-      case 'LUMI':
-        $('#LUMI').html(message);
-        break;
-      case 'HMDT':
-        $('#HMDT').html(message);
-        break;
-      case 'TEMP':
-        $('#TEMP').html(message);
-        break;
-    }
-  })
+      switch (words[2]) {
+        case 'LUMI':
+          $('#LUMI').html(message);
+          break;
+        case 'HMDT':
+          $('#HMDT').html(message);
+          break;
+        case 'TEMP':
+          $('#TEMP').html(message);
+          break;
+      }
+    })
 
-  // this will be called when the "LED ON" button is pressed 
-  $('#turn_on').on('click',function() {
-      console.log("turn on");
-      var topic = 'sensor/1/SWITCH';
-      var message = 'on';
-      client.publish(topic, message, { qos: 2 });
-  });
+    // this will be called when the "LED ON" button is pressed
+    $('#turn_on').on('click',function() {
+        console.log("turn on");
+        var topic = 'light/SWITCH';
+        var message = 'on';
+        client.publish(topic, message, { qos: 2 });
+    });
 
-  // this will be called when the "LED OFF" button is pressed 
-  $('#turn_off').on('click',function() {
-      console.log("turn off");
-      var topic = 'sensor/1/SWITCH';
-      var message = 'off';
-      client.publish(topic, message, { qos: 2 });
-  });
+    // this will be called when the "LED OFF" button is pressed
+    $('#turn_off').on('click',function() {
+        console.log("turn off");
+        var topic = 'light/SWITCH';
+        var message = 'off';
+        client.publish(topic, message, { qos: 2 });
+    });
+
+    $('#choose_color').on('click',function() {
+        console.log("Sending chosen color");
+        colorWell = document.querySelector("#head");
+        var topic = 'light/COLOR';
+        var message = colorWell.value;
+        client.publish(topic, message, { qos: 2 });
+    });
 
 
-} );
+
+
+  } );
+/*
+  //Color selection
+  var colorWell
+  var defaultColor = "#0000ff";
+
+  window.addEventListener("load", startup, false);
+  function startup() {
+    colorWell = document.querySelector("#head");
+    colorWell.value = defaultColor;
+    //colorWell.addEventListener("input", updateFirst, false);
+    colorWell.addEventListener("change", sendColor, false);
+    colorWell.select();
+  }
+  //Sending color
+  function sendColor(event) {
+    console.log(event.target.value);
+    var topic = 'light/COLOR';
+    var message = event.target.value;
+    client.publish(topic, message, { qos: 2 });
+  }
+*/
+
+
 
 </script>
 
-<h1>Test Ws mqtt.js</h1>
+  <h1>Test Ws mqtt.js</h1>
 
-<p>Open the developer console to see the javascript console log messages, and edit the source file!</p>
+  <p>Open the developer console to see the javascript console log messages, and edit the source file!</p>
 
-<div>
-  <input type="button" id="turn_on" value="LED ON" />
-  <input type="button" id="turn_off" value="LED OFF" />
-</div> 
+  <div>
+    <input type="button" id="turn_on" value="LED ON" />
+    <input type="button" id="turn_off" value="LED OFF" />
+  </div>
 
-<div>
-  <p>The latest reading is: <span id="reading"></span><p>
-  <p>LUMI: <span id="LUMI"></span> - TEMP: <span id="TEMP"></span> - HMDT: <span id="HMDT"></span></p>
-</div> 
+  <p>Choose your lamp's color:</p>
+
+  <div>
+      <input type="color" id="head" name="head" value="#e66465"/>
+      <label for="head">Head</label>
+      <input type="button" id="choose_color" value="Send color" />
+  </div>
 
 
 </body>
