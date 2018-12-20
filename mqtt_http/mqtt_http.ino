@@ -25,6 +25,20 @@
 #include <WiFiNINA.h>
 #include <MQTT.h>
 
+#include <DHT.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+
+/* In which pins are my sensors plugged? */
+#define LUM A0  // TEMT6000 Signal pin
+#define TMP 4   // DHT22 Signal pin
+
+/* We need a DHT object to address the sensor. */
+DHT dht(TMP, DHT22) ; // pin: TMP, model: DHT22
+
+
+
 /* We need objects to handle:
  *  1. WiFi connectivity
  *  2. MQTT messages
@@ -51,11 +65,14 @@ const char* mqtt_password = "philips-hue-973";
 const uint16_t mqtt_port =  11029 ;
 
 unsigned long lastConnectionTime = 0;
+
+/* Some variables to handle measurements. */
+int tmp ;
+int lum ;
+int hmdt ;
 boolean first_time ;
 
 uint32_t t0, t ;
-
-StaticJsonBuffer<200> jsonBuffer;
 
 
 /* 'topic' is the string representing the topic on which messages
@@ -115,14 +132,42 @@ void loop() {
   if ( first_time || (t - t0) >= DELTA_T ) {
     t0 = t ;
     first_time = false ;
-    
+
+    lum = getLum() ;
+    tmp = getTmp() ;
+    hmdt = getHmdt() ;
+
+    Serial.println("Get values");
+    sendValues() ;
   }
-  while(wifi_client.available()){
-    
-   char c = wifi_client.read();
-   Serial.write(c);
-   
+}
+
+/* ------------------------------------------------------------------- */
+double getLum()
+{
+  double acc = 0 ;
+  uint8_t n_val ;
+
+  for ( n_val = 0 ; n_val < 10 ; n_val++ ) {
+    acc += analogRead(LUM) ;
+    delay(5) ;
   }
+
+  return acc / n_val ;
+}
+
+
+/* ------------------------------------------------------------------- */
+double getTmp()
+{
+  return dht.readTemperature() ;
+}
+
+
+/* ------------------------------------------------------------------- */
+double getHmdt()
+{
+  return dht.readHumidity() ;
 }
 
 
@@ -241,6 +286,17 @@ void reconnect() {
  * Values are sent on a regular basis (every DELTA_T_SEND_VALUES 
  * milliseconds).
  */
+
+void sendValues() {
+  if ( mqtt_client.connected() ) {
+    if ( lum != -1 )
+      mqtt_client.publish(String(topic + "/LUMI").c_str(), String(lum).c_str()) ;
+    if ( tmp != -1 )
+      mqtt_client.publish(String(topic + "/TEMP").c_str(), String(tmp).c_str()) ;
+    if ( hmdt != -1 )
+      mqtt_client.publish(String(topic + "/HMDT").c_str(), String(hmdt).c_str()) ;
+  }
+}
  
 
 void postRequest(String postData) {
@@ -280,13 +336,14 @@ void callback(String &intopic, String &payload)
    */
   Serial.println("incoming: " + intopic + " - " + payload);
   if (intopic == String(topic + "/SWITCH").c_str()) {
+    Serial.println(payload) ;
     if(payload == "on") {
       digitalWrite(LED_BUILTIN, HIGH) ;
-      postRequest("{\"on\": \"true\"}") ;
+      postRequest("{\"on\": true}") ;
     }
     else if (payload == "off") {
       digitalWrite(LED_BUILTIN, LOW) ;
-      postRequest("{\"on\": \"false\"}") ;
+      postRequest("{\"on\": false}") ;
     }
     else {
       Serial.println("Wrong command");
