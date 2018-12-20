@@ -2,12 +2,18 @@
 <head>
   <title>Test Ws mqtt.js</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+
+  <link rel="stylesheet" type="text/css" href="design.css">
 </head>
 <body>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script> <!-- https://github.com/mqttjs/MQTT.js/ -->
-
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><!-- Add icon library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 <script>
   // '$' is a the JQuery object. It has a lot of function to do Document Object Model (DOM) manipulation, event handling, animation, Ajax and a lot more.
 
@@ -71,8 +77,12 @@
           $('#TEMP').html(message);
           break;
       }
+
+
+
     })
 
+/*
     // this will be called when the "LED ON" button is pressed
     $('#turn_on').on('click',function() {
         console.log("turn on");
@@ -86,6 +96,20 @@
         console.log("turn off");
         var topic = 'light/SWITCH';
         var message = 'off';
+        client.publish(topic, message, { qos: 2 });
+    });
+*/
+
+    // this will be called when the switch button is pressed
+    $('#switchLight').on('click',function() {
+        console.log("switching light");
+        var topic = 'light/SWITCH';
+        var message = 'off';
+        if(document.getElementById("switchLight").checked==true){
+          var message = 'on';
+        }else{
+          var message = 'off';
+        }
         client.publish(topic, message, { qos: 2 });
     });
 
@@ -131,29 +155,14 @@
     }
 
   } );
-/*
-  //Color selection
-  var colorWell
-  var defaultColor = "#0000ff";
 
-  window.addEventListener("load", startup, false);
-  function startup() {
-    colorWell = document.querySelector("#head");
-    colorWell.value = defaultColor;
-    //colorWell.addEventListener("input", updateFirst, false);
-    colorWell.addEventListener("change", sendColor, false);
-    colorWell.select();
+  function myFunction(){
+    if(document.getElementById("switchLight").checked==true){
+      document.getElementById("switchLight").checked=false;
+    }else{
+      document.getElementById("switchLight").checked=true;
+    }
   }
-  //Sending color
-  function sendColor(event) {
-    console.log(event.target.value);
-    var topic = 'light/COLOR';
-    var message = event.target.value;
-    client.publish(topic, message, { qos: 2 });
-  }
-*/
-
-
 
 </script>
 
@@ -161,17 +170,25 @@
 
   <p>Open the developer console to see the javascript console log messages, and edit the source file!</p>
 
-  <div>
-    <input type="button" id="turn_on" value="LED ON" />
-    <input type="button" id="turn_off" value="LED OFF" />
+  <div class="row">
+    <div class="col-md-6">
+
+
+      <!-- Rounded switch -->
+      <label class="switch">
+        <input id="switchLight" type="checkbox" checked>
+        <span class="slider round"></span>
+      </label>
+
+    </div>
   </div>
-
   <p>Choose your lamp's color:</p>
-
-  <div>
-      <input type="color" id="head" name="head" value="#e66465"/>
-      <label for="head">Head</label>
-      <input type="button" id="choose_color" value="Send color" />
+  <div class="row">
+    <div class="col-md-10">
+        <input type="color" id="head" name="head" value="#e66465"/>
+        <label for="head">Head</label>
+        <input type="button" id="choose_color" value="Send color" />
+    </div>
   </div>
 
 
