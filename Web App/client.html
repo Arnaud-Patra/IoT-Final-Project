@@ -66,7 +66,19 @@
 
       var words = topic.split('/');
 
-      switch (words[2]) {
+      if(words[1] == "SWITCH"){
+        console.log("coucou");
+        if(document.getElementById("switchLight").checked==true){
+          console.log("coucou checked");
+          document.getElementById("switchLight").checked=true;
+        }else{
+          console.log("coucou unchecked");
+          document.getElementById("switchLight").checked=false;
+        }
+      }
+
+      console.log(message);
+      switch (words[1]) {
         case 'LUMI':
           $('#LUMI').html(message);
           break;
@@ -82,7 +94,7 @@
 
     })
 
-/*
+
     // this will be called when the "LED ON" button is pressed
     $('#turn_on').on('click',function() {
         console.log("turn on");
@@ -90,7 +102,7 @@
         var message = 'on';
         client.publish(topic, message, { qos: 2 });
     });
-
+/*
     // this will be called when the "LED OFF" button is pressed
     $('#turn_off').on('click',function() {
         console.log("turn off");
@@ -172,7 +184,7 @@
 
   <div class="row">
     <div class="col-md-6">
-
+      <input type="button" id="turn_on" value="LED ON" />
 
       <!-- Rounded switch -->
       <label class="switch">
@@ -185,12 +197,31 @@
   <p>Choose your lamp's color:</p>
   <div class="row">
     <div class="col-md-10">
-        <input type="color" id="head" name="head" value="#e66465"/>
+        <input type="color" id="head" name="head" value="#12ff00"/>
         <label for="head">Head</label>
         <input type="button" id="choose_color" value="Send color" />
     </div>
   </div>
 
+
+
+  <p>Luminosity value</p>
+  <div>
+    <p>The latest reading is: <span id="reading"></span><p>
+  </div>
+
+  <div class="row">
+    <div class="col-md-10">
+        <p>The sensors values are :</p>
+        <div class="card" style="width: 16rem;">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item" >LUMI: <span id="LUMI"></span></li>
+            <li class="list-group-item" >TEMP: <span id="TEMP"></span></li>
+            <li class="list-group-item" >HMDT: <span id="HMDT"></span></li>
+          </ul>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
