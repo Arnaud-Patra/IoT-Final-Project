@@ -67,17 +67,13 @@
       var words = topic.split('/');
 
       if(words[1] == "SWITCH"){
-        console.log("coucou");
-        if(document.getElementById("switchLight").checked==true){
-          console.log("coucou checked");
+        if(message=='on'){
           document.getElementById("switchLight").checked=true;
         }else{
-          console.log("coucou unchecked");
           document.getElementById("switchLight").checked=false;
         }
       }
 
-      console.log(message);
       switch (words[1]) {
         case 'LUMI':
           $('#LUMI').html(message);
