@@ -18,7 +18,6 @@
  */
  
 #include <string.h>
-#include <ArduinoJson.h>
 
 #include <Wire.h>
 #include <SPI.h>
@@ -229,9 +228,7 @@ void reconnect() {
   Serial.print(topic) ;
   Serial.println("\"") ;
     
-  mqtt_client.publish(String(topic).c_str(), "MQTT connection This example shows the different ways you can use String objects with ArduinoJson.
-
-init after " + String(millis()) + "ms.") ;
+  mqtt_client.publish(String(topic).c_str(), "MQTT connection init after " + String(millis()) + "ms.") ;
 
   /* If you want to subscribe to topics, you have to do it here. */
   mqtt_client.subscribe(String(topic + "/SWITCH").c_str());
@@ -295,19 +292,8 @@ void callback(String &intopic, String &payload)
       Serial.println("Wrong command");
     }
   };
-  if (intopic == String(topic + "/COLOR").c_str()) {
-    JsonObject& root = jsonBuffer.parseObject(payload);
-    if (!root.success()) {
-      Serial.println("parseObject() failed");
-    return;
-    }
-
-    String hue = root["hue"];
-    String sat = root["sat"];
-    String bri = root["bri"];
-    Serial.println(hue);
-    Serial.println(sat);
-    Serial.println(bri);
-
+  if (intopic == String(topic + "/COLOR").c_str()) { 
+    Serial.println(payload) ;
+    postRequest(payload) ;
   }
 }
