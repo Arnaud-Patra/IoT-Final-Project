@@ -18,6 +18,7 @@
  */
  
 #include <string.h>
+#include <ArduinoJson.h>
 
 #include <Wire.h>
 #include <SPI.h>
@@ -54,6 +55,8 @@ unsigned long lastConnectionTime = 0;
 boolean first_time ;
 
 uint32_t t0, t ;
+
+StaticJsonBuffer<200> jsonBuffer;
 
 
 /* 'topic' is the string representing the topic on which messages
@@ -226,7 +229,9 @@ void reconnect() {
   Serial.print(topic) ;
   Serial.println("\"") ;
     
-  mqtt_client.publish(String(topic).c_str(), "MQTT connection init after " + String(millis()) + "ms.") ;
+  mqtt_client.publish(String(topic).c_str(), "MQTT connection This example shows the different ways you can use String objects with ArduinoJson.
+
+init after " + String(millis()) + "ms.") ;
 
   /* If you want to subscribe to topics, you have to do it here. */
   mqtt_client.subscribe(String(topic + "/SWITCH").c_str());
@@ -240,34 +245,10 @@ void reconnect() {
  * milliseconds).
  */
  
-void httpRequest() {
+
+void postRequest(String postData) {
   // close any connection before send a new request.
   // This will free the socket on the Nina module
-  
-
-  // if there's a successful connection:
-  if (wifi_client.connect(server, 80)) {
-    Serial.println("connecting...");
-    // send the HTTP PUT request:
-    wifi_client.println("GET / HTTP/1.1");
-    wifi_client.println("Host: example.org");
-    wifi_client.println("User-Agent: ArduinoWiFi/1.1");
-    wifi_client.println("Connection: close");
-    wifi_client.println();
-
-    // note the time that the connection was made:
-    lastConnectionTime = millis();
-  } else {
-    // if you couldn't make a connection:
-    Serial.println("connection failed");
-  }
-}
-
-void postRequest(String message) {
-  // close any connection before send a new request.
-  // This will free the socket on the Nina module
-
-  String postData = "{\"on\":" + message + "}" ;
 
   // if there's a successful connection:
   if (wifi_client.connect(server, 80)) {
@@ -304,14 +285,29 @@ void callback(String &intopic, String &payload)
   if (intopic == String(topic + "/SWITCH").c_str()) {
     if(payload == "on") {
       digitalWrite(LED_BUILTIN, HIGH) ;
-      postRequest("true") ;
+      postRequest("{\"on\": \"true\"}") ;
     }
     else if (payload == "off") {
       digitalWrite(LED_BUILTIN, LOW) ;
-      postRequest("false") ;
+      postRequest("{\"on\": \"false\"}") ;
     }
     else {
       Serial.println("Wrong command");
     }
+  };
+  if (intopic == String(topic + "/COLOR").c_str()) {
+    JsonObject& root = jsonBuffer.parseObject(payload);
+    if (!root.success()) {
+      Serial.println("parseObject() failed");
+    return;
+    }
+
+    String hue = root["hue"];
+    String sat = root["sat"];
+    String bri = root["bri"];
+    Serial.println(hue);
+    Serial.println(sat);
+    Serial.println(bri);
+
   }
 }
