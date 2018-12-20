@@ -44,6 +44,7 @@ DHT dht(TMP, DHT22) ; // pin: TMP, model: DHT22
  *  2. MQTT messages
  */
 WiFiClient wifi_client ;
+
 MQTTClient mqtt_client ;
 
 
@@ -90,7 +91,7 @@ String user_id = "rxUynGdZPYzS5JdzOywJjWrrseVCoYx6DlQvQ5Ca" ;
 char server[] = "192.168.1.131";
 
 /* Time between two sensings and values sent. */
-#define DELTA_T 5000
+#define DELTA_T 10000
 
 
 /* ################################################################### */
