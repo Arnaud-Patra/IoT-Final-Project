@@ -25,11 +25,26 @@
 #include <WiFiNINA.h>
 #include <MQTT.h>
 
+#include <DHT.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+
+
+/* In which pins are my sensors plugged? */
+#define LUM A0  // TEMT6000 Signal pin
+#define TMP 4   // DHT22 Signal pin
+
+/* We need a DHT object to address the sensor. */
+DHT dht(TMP, DHT22) ; // pin: TMP, model: DHT22
+
+
+
 /* We need objects to handle:
  *  1. WiFi connectivity
  *  2. MQTT messages
  */
 WiFiClient wifi_client ;
+
 MQTTClient mqtt_client ;
 
 
@@ -51,6 +66,11 @@ const char* mqtt_password = "philips-hue-973";
 const uint16_t mqtt_port =  11029 ;
 
 unsigned long lastConnectionTime = 0;
+
+/* Some variables to handle measurements. */
+int tmp ;
+int lum ;
+int hmdt ;
 boolean first_time ;
 
 uint32_t t0, t ;
@@ -71,7 +91,7 @@ String user_id = "rxUynGdZPYzS5JdzOywJjWrrseVCoYx6DlQvQ5Ca" ;
 char server[] = "192.168.1.131";
 
 /* Time between two sensings and values sent. */
-#define DELTA_T 5000
+#define DELTA_T 10000
 
 
 /* ################################################################### */
@@ -113,14 +133,42 @@ void loop() {
   if ( first_time || (t - t0) >= DELTA_T ) {
     t0 = t ;
     first_time = false ;
-    
+
+    lum = getLum() ;
+    tmp = getTmp() ;
+    hmdt = getHmdt() ;
+
+    Serial.println("Get values");
+    sendValues() ;
   }
-  while(wifi_client.available()){
-    
-   char c = wifi_client.read();
-   Serial.write(c);
-   
+}
+
+/* ------------------------------------------------------------------- */
+double getLum()
+{
+  double acc = 0 ;
+  uint8_t n_val ;
+
+  for ( n_val = 0 ; n_val < 10 ; n_val++ ) {
+    acc += analogRead(LUM) ;
+    delay(5) ;
   }
+
+  return acc / n_val ;
+}
+
+
+/* ------------------------------------------------------------------- */
+double getTmp()
+{
+  return dht.readTemperature() ;
+}
+
+
+/* ------------------------------------------------------------------- */
+double getHmdt()
+{
+  return dht.readHumidity() ;
 }
 
 
@@ -239,35 +287,22 @@ void reconnect() {
  * Values are sent on a regular basis (every DELTA_T_SEND_VALUES 
  * milliseconds).
  */
- 
-void httpRequest() {
-  // close any connection before send a new request.
-  // This will free the socket on the Nina module
-  
 
-  // if there's a successful connection:
-  if (wifi_client.connect(server, 80)) {
-    Serial.println("connecting...");
-    // send the HTTP PUT request:
-    wifi_client.println("GET / HTTP/1.1");
-    wifi_client.println("Host: example.org");
-    wifi_client.println("User-Agent: ArduinoWiFi/1.1");
-    wifi_client.println("Connection: close");
-    wifi_client.println();
-
-    // note the time that the connection was made:
-    lastConnectionTime = millis();
-  } else {
-    // if you couldn't make a connection:
-    Serial.println("connection failed");
+void sendValues() {
+  if ( mqtt_client.connected() ) {
+    if ( lum != -1 )
+      mqtt_client.publish(String(topic + "/LUMI").c_str(), String(lum).c_str()) ;
+    if ( tmp != -1 )
+      mqtt_client.publish(String(topic + "/TEMP").c_str(), String(tmp).c_str()) ;
+    if ( hmdt != -1 )
+      mqtt_client.publish(String(topic + "/HMDT").c_str(), String(hmdt).c_str()) ;
   }
 }
+ 
 
-void postRequest(String message) {
+void postRequest(String postData) {
   // close any connection before send a new request.
   // This will free the socket on the Nina module
-
-  String postData = "{\"on\":" + message + "}" ;
 
   // if there's a successful connection:
   if (wifi_client.connect(server, 80)) {
@@ -302,16 +337,21 @@ void callback(String &intopic, String &payload)
    */
   Serial.println("incoming: " + intopic + " - " + payload);
   if (intopic == String(topic + "/SWITCH").c_str()) {
+    Serial.println(payload) ;
     if(payload == "on") {
       digitalWrite(LED_BUILTIN, HIGH) ;
-      postRequest("true") ;
+      postRequest("{\"on\": true}") ;
     }
     else if (payload == "off") {
       digitalWrite(LED_BUILTIN, LOW) ;
-      postRequest("false") ;
+      postRequest("{\"on\": false}") ;
     }
     else {
       Serial.println("Wrong command");
     }
+  };
+  if (intopic == String(topic + "/COLOR").c_str()) { 
+    Serial.println(payload) ;
+    postRequest(payload) ;
   }
 }
