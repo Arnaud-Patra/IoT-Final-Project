@@ -16,11 +16,8 @@
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
 <script>
   // '$' is a the JQuery object. It has a lot of function to do Document Object Model (DOM) manipulation, event handling, animation, Ajax and a lot more.
-
   var clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
-
   var host = 'wss://m21.cloudmqtt.com:31029'
-
   var options = {
     keepalive: 10,
     clientId: clientId,
@@ -39,13 +36,9 @@
     password: 'philips-hue-973',
     rejectUnauthorized: false
   }
-
-
   // the function passed as parameter will be called when the DOM is ready
   $(function(){
-
     console.log("starting");
-
     // create a client that will publish and subscribe to topics
     //var client = mqtt.connect("wss://ghlyeczk:ygclNYrYVgvv@m21.cloudmqtt.com:31029")
     var client = mqtt.connect(host, options)
@@ -57,15 +50,12 @@
         }
       });
     });
-
     // this will be called when a message is received
     client.on("message", function (topic, payload) {
       var message = new TextDecoder("utf-8").decode(payload);
       console.log("message received by client: " , topic , message);
       $('#reading').html(topic + ": " + message);
-
       var words = topic.split('/');
-
       if(words[1] == "SWITCH"){
         if(message=='on'){
           document.getElementById("switchLight").checked=true;
@@ -73,7 +63,6 @@
           document.getElementById("switchLight").checked=false;
         }
       }
-
       switch (words[1]) {
         case 'LUMI':
           $('#LUMI').html(message);
@@ -85,11 +74,7 @@
           $('#TEMP').html(message);
           break;
       }
-
-
-
     })
-
 /*
     // this will be called when the "LED ON" button is pressed
     $('#turn_on').on('click',function() {
@@ -98,7 +83,6 @@
         var message = 'on';
         client.publish(topic, message, { qos: 2 });
     });
-
     // this will be called when the "LED OFF" button is pressed
     $('#turn_off').on('click',function() {
         console.log("turn off");
@@ -107,7 +91,6 @@
         client.publish(topic, message, { qos: 2 });
     });
 */
-
     // this will be called when the switch button is pressed
     $('#switchLight').on('click',function() {
         console.log("switching light");
@@ -120,32 +103,21 @@
         }
         client.publish(topic, message, { qos: 2 });
     });
-
     $('#choose_color').on('click',function() {
         console.log("Sending chosen color");
         colorWell = document.querySelector("#head");
         var topic = 'light/COLOR';
-
-
         var color=colorWell.value; // A nice shade of green.
         var r = parseInt(color.substr(1,2), 16); // Grab the hex representation of red (chars 1-2) and convert to decimal (base 10).
         var g = parseInt(color.substr(3,2), 16);
         var b = parseInt(color.substr(5,2), 16);
-
-
-
         var message = rgbToHsl(r,g,b);;
-
-
         client.publish(topic, message, { qos: 2 });
     });
-
-
     function rgbToHsl(r, g, b){
         r /= 255, g /= 255, b /= 255;
         var max = Math.max(r, g, b), min = Math.min(r, g, b);
         var h, s, l = (max + min) / 2;
-
         if(max == min){
             h = s = 0; // achromatic
         }else{
@@ -158,12 +130,9 @@
             }
             h /= 6;
         }
-
         return "{\"hue\":"+Math.round(h*360*182.04)+", \"sat\":"+Math.round(s*255)+", \"bri\":"+Math.round(l*255)+"}";
     }
-
   } );
-
   function myFunction(){
     if(document.getElementById("switchLight").checked==true){
       document.getElementById("switchLight").checked=false;
@@ -171,16 +140,92 @@
       document.getElementById("switchLight").checked=true;
     }
   }
-
 </script>
 
-  <h1>Test Ws mqtt.js</h1>
+<div class="hero">
 
-  <p>Open the developer console to see the javascript console log messages, and edit the source file!</p>
+    <div class="snow">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMax slice">
+		    <g fill="#FFF" fill-opacity=".15" transform="translate(55 42)">
+			   <g id="snow-bottom-layer">
+				  <ellipse cx="6" cy="1009.5" rx="6" ry="5.5"/>
+				  <ellipse cx="138" cy="1110.5" rx="6" ry="5.5"/>
+				  <ellipse cx="398" cy="1055.5" rx="6" ry="5.5"/>
+				  <ellipse cx="719" cy="1284.5" rx="6" ry="5.5"/>
+				  <ellipse cx="760" cy="1155.5" rx="6" ry="5.5"/>
+				  <ellipse cx="635" cy="1459.5" rx="6" ry="5.5"/>
+				  <ellipse cx="478" cy="1335.5" rx="6" ry="5.5"/>
+				  <ellipse cx="322" cy="1414.5" rx="6" ry="5.5"/>
+				  <ellipse cx="247" cy="1234.5" rx="6" ry="5.5"/>
+				  <ellipse cx="154" cy="1425.5" rx="6" ry="5.5"/>
+				  <ellipse cx="731" cy="773.5" rx="6" ry="5.5"/>
+				  <ellipse cx="599" cy="874.5" rx="6" ry="5.5"/>
+				  <ellipse cx="339" cy="819.5" rx="6" ry="5.5"/>
+				  <ellipse cx="239" cy="1004.5" rx="6" ry="5.5"/>
+				  <ellipse cx="113" cy="863.5" rx="6" ry="5.5"/>
+				  <ellipse cx="102" cy="1223.5" rx="6" ry="5.5"/>
+				  <ellipse cx="395" cy="1155.5" rx="6" ry="5.5"/>
+				  <ellipse cx="826" cy="943.5" rx="6" ry="5.5"/>
+				  <ellipse cx="626" cy="1054.5" rx="6" ry="5.5"/>
+				  <ellipse cx="887" cy="1366.5" rx="6" ry="5.5"/>
+				  <ellipse cx="6" cy="241.5" rx="6" ry="5.5"/>
+				  <ellipse cx="138" cy="342.5" rx="6" ry="5.5"/>
+				  <ellipse cx="398" cy="287.5" rx="6" ry="5.5"/>
+				  <ellipse cx="719" cy="516.5" rx="6" ry="5.5"/>
+				  <ellipse cx="760" cy="387.5" rx="6" ry="5.5"/>
+				  <ellipse cx="635" cy="691.5" rx="6" ry="5.5"/>
+				  <ellipse cx="478" cy="567.5" rx="6" ry="5.5"/>
+				  <ellipse cx="322" cy="646.5" rx="6" ry="5.5"/>
+				  <ellipse cx="247" cy="466.5" rx="6" ry="5.5"/>
+				  <ellipse cx="154" cy="657.5" rx="6" ry="5.5"/>
+				  <ellipse cx="731" cy="5.5" rx="6" ry="5.5"/>
+				  <ellipse cx="599" cy="106.5" rx="6" ry="5.5"/>
+				  <ellipse cx="339" cy="51.5" rx="6" ry="5.5"/>
+				  <ellipse cx="239" cy="236.5" rx="6" ry="5.5"/>
+				  <ellipse cx="113" cy="95.5" rx="6" ry="5.5"/>
+				  <ellipse cx="102" cy="455.5" rx="6" ry="5.5"/>
+				  <ellipse cx="395" cy="387.5" rx="6" ry="5.5"/>
+				  <ellipse cx="826" cy="175.5" rx="6" ry="5.5"/>
+				  <ellipse cx="626" cy="286.5" rx="6" ry="5.5"/>
+				  <ellipse cx="887" cy="598.5" rx="6" ry="5.5"/>
+			   </g>
+		    </g>
+		    <g fill="#FFF" fill-opacity=".3" transform="translate(65 63)">
+			   <g id="snow-top-layer">
+				  <circle cx="8" cy="776" r="8"/>
+				  <circle cx="189" cy="925" r="8"/>
+				  <circle cx="548" cy="844" r="8"/>
+				  <circle cx="685" cy="1115" r="8"/>
+				  <circle cx="858" cy="909" r="8"/>
+				  <circle cx="874" cy="1438" r="8" transform="rotate(180 874 1438)"/>
+				  <circle cx="657" cy="1256" r="8" transform="rotate(180 657 1256)"/>
+				  <circle cx="443" cy="1372" r="8" transform="rotate(180 443 1372)"/>
+				  <circle cx="339" cy="1107" r="8" transform="rotate(180 339 1107)"/>
+				  <circle cx="24" cy="1305" r="8" transform="rotate(180 24 1305)"/>
+				  <circle cx="8" cy="8" r="8"/>
+				  <circle cx="189" cy="157" r="8"/>
+				  <circle cx="548" cy="76" r="8"/>
+				  <circle cx="685" cy="347" r="8"/>
+				  <circle cx="858" cy="141" r="8"/>
+				  <circle cx="874" cy="670" r="8" transform="rotate(180 874 670)"/>
+				  <circle cx="657" cy="488" r="8" transform="rotate(180 657 488)"/>
+				  <circle cx="443" cy="604" r="8" transform="rotate(180 443 604)"/>
+				  <circle cx="339" cy="339" r="8" transform="rotate(180 339 339)"/>
+				  <circle cx="24" cy="537" r="8" transform="rotate(180 24 537)"/>
+			   </g>
+		    </g>
+		</svg>
+    </div>
 
+<div class="hero__content">
+	
+
+  <h1 style="color:#f9f9f9;">Test WS mqtt.js</h1>
+
+  <div class = "a"> <p style="color:#f9f9f9;">Open the developer console to see the javascript console log messages, and edit the source file!</p> </div>
+  <div class = "a"> <p style="color:#f9f9f9;">Switch</p> </div>
   <div class="row">
     <div class="col-md-6">
-
       <!-- Rounded switch -->
       <label class="switch">
         <input id="switchLight" type="checkbox" checked>
@@ -189,25 +234,25 @@
 
     </div>
   </div>
-  <p>Choose your lamp's color:</p>
-  <div class="row">
-    <div class="col-md-10">
-        <input type="color" id="head" name="head" value="#12ff00"/>
-        <label for="head">Head</label>
-        <input type="button" id="choose_color" value="Send color" />
+
+  <div class = "a"> <p style="color:#f9f9f9;"> <br> Bulb's color</p> 
+    <div class="col-md-2" style="left:41%;">
+        <input type="color" id="head" name="head" value="#2fff00"/>
+        <input type="button" class = "button" id="choose_color" value="Send" />
     </div>
   </div>
 
-
-
-  <p>Luminosity value</p>
+<!--  
+<div class = "a">
+  <p style="color:#f9f9f9;"> <br> Brightness value</p>
   <div>
-    <p>The latest reading is: <span id="reading"></span><p>
+  </div>
+    <p style="color:#f9f9f9;">The latest reading is: <span id="reading"></span><p>
   </div>
 
   <div class="row">
     <div class="col-md-10">
-        <p>The sensors values are :</p>
+        <p style="color:#f9f9f9;">The sensors values are :</p>
         <div class="card" style="width: 16rem;">
           <ul class="list-group list-group-flush">
             <li class="list-group-item" >LUMI: <span id="LUMI"></span></li>
@@ -217,6 +262,38 @@
       </div>
     </div>
   </div>
+  -->
+
+<div class = "a">
+    <p style="color:#f9f9f9;"> <br> The latest reading is: <span id="reading"></span><p>
+  </div>
+
+  <h2 style="color:#f9f9f9;"> Sensor values </h2>
+
+<div id="wrapper">
+    <div id="first">
+<img src="https://cdn1.iconfinder.com/data/icons/education-vol-2/48/096-512.png" style="width: 20%;height: 15%;"
+alt="Brightness"> 
+<span id="LUMI"></span> </div>
+    <div id="second">
+    	<img src="https://cdn1.iconfinder.com/data/icons/complete-medical-healthcare-icons-for-apps-and-web/128/thermometer-512.png" style="width: 20%;height: 15%;"
+    	alt="Temperature">
+    	<span id="TEMP"></span> </div>
+    <div id="third">
+    	<img src="https://image.flaticon.com/icons/png/512/514/514267.png" style="width: 20%;height: 12%;"
+    	alt="Humidity">
+    	<span id="HMDT"></span></div>
+</div>
+
+
+
+  </div>
+
+
+
+
+ </div>
+  
 
 </body>
 </html>
