@@ -72,6 +72,11 @@ int lum ;
 int hmdt ;
 boolean first_time ;
 
+boolean enabled = false;
+
+int BUTTON_ALIM = 7;
+int BUTTON_READ = 6;
+
 uint32_t t0, t ;
 
 
@@ -101,6 +106,10 @@ void setup() {
 
   pinMode(LED_BUILTIN, OUTPUT) ;
   digitalWrite(LED_BUILTIN, LOW) ;  // switch LED off
+
+  pinMode(BUTTON_ALIM, OUTPUT);
+  pinMode(BUTTON_READ, INPUT);
+  digitalWrite(BUTTON_ALIM, HIGH);
 
 
   status = WiFi.begin(wifi_ssid, wifi_password) ;
@@ -140,6 +149,21 @@ void loop() {
     Serial.println("Get values");
     sendValues() ;
   }
+
+  if (digitalRead(BUTTON_READ) == HIGH)
+    {
+      Serial.println("Switch light");
+      
+      mqtt_client.publish(String(topic + "/SWITCH").c_str(), String(enabled ? "on" : "off").c_str()) ;
+
+      delay(50);
+
+      //request("PUT", "{\"on\": " + String(enabled) + "}");
+    
+      enabled = !enabled;
+      
+      delay(300);
+    }
 }
 
 /* ------------------------------------------------------------------- */
@@ -299,7 +323,7 @@ void sendValues() {
 }
  
 
-void postRequest(String postData) {
+void request(String method, String postData) {
   // close any connection before send a new request.
   // This will free the socket on the Nina module
 
@@ -307,7 +331,7 @@ void postRequest(String postData) {
   if (wifi_client.connect(server, 80)) {
     Serial.println("connecting...");
     // send the HTTP PUT request:
-    wifi_client.println("PUT /api/" + user_id + "/lights/9/state HTTP/1.1");
+    wifi_client.println(method + " /api/" + user_id + "/lights/9/state HTTP/1.1");
     wifi_client.println("Host: 192.168.1.131");
     wifi_client.println("User-Agent: ArduinoWiFi/1.1");
     wifi_client.println("Connection: close");
@@ -316,6 +340,12 @@ void postRequest(String postData) {
     wifi_client.println(postData.length());
     wifi_client.println();
     wifi_client.println(postData);
+
+    Serial.println("Respond:");
+    while(wifi_client.available()){
+      String line = wifi_client.readStringUntil('\r');
+      Serial.print(line);
+    }
 
     // note the time that the connection was made:
     lastConnectionTime = millis();
@@ -339,11 +369,11 @@ void callback(String &intopic, String &payload)
     Serial.println(payload) ;
     if(payload == "on") {
       digitalWrite(LED_BUILTIN, HIGH) ;
-      postRequest("{\"on\": true}") ;
+      request("PUT", "{\"on\": true}") ;
     }
     else if (payload == "off") {
       digitalWrite(LED_BUILTIN, LOW) ;
-      postRequest("{\"on\": false}") ;
+      request("PUT", "{\"on\": false}") ;
     }
     else {
       Serial.println("Wrong command");
@@ -351,6 +381,6 @@ void callback(String &intopic, String &payload)
   };
   if (intopic == String(topic + "/COLOR").c_str()) { 
     Serial.println(payload) ;
-    postRequest(payload) ;
+    request("PUT", payload) ;
   }
 }
