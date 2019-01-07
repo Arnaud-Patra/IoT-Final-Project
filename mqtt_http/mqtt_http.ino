@@ -156,7 +156,7 @@ void loop() {
       
       mqtt_client.publish(String(topic + "/SWITCH").c_str(), String(enabled ? "on" : "off").c_str()) ;
 
-      delay(50);
+      //delay(50);
 
       //request("PUT", "{\"on\": " + String(enabled) + "}");
     
@@ -368,11 +368,11 @@ void callback(String &intopic, String &payload)
   if (intopic == String(topic + "/SWITCH").c_str()) {
     Serial.println(payload) ;
     if(payload == "on") {
-      digitalWrite(LED_BUILTIN, HIGH) ;
+      //digitalWrite(LED_BUILTIN, HIGH) ;
       request("PUT", "{\"on\": true}") ;
     }
     else if (payload == "off") {
-      digitalWrite(LED_BUILTIN, LOW) ;
+      //digitalWrite(LED_BUILTIN, LOW) ;
       request("PUT", "{\"on\": false}") ;
     }
     else {
